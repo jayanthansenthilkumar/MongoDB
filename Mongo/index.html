@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+    <style>
+        /* Fullscreen loader styles */
+        .fullscreen-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(245, 248, 254, 0.9);
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+        
+        .loader-spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .loader-text {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Make SweetAlert appear above the loader */
+        .swal2-container {
+            z-index: 2000 !important;
+        }
+        
+        /* Add this to hide the dashboard initially */
+        .dashboard-hidden {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .dashboard-visible {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body data-welcome-status="{{ welcome_status }}">
+    <div id="welcome-loader" class="fullscreen-loader hidden">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Preparing your dashboard...</div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    
+    <!-- Add the dashboard-hidden class initially -->
+    <div class="dashboard dashboard-hidden" id="main-dashboard">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-database logo-icon"></i>
+                <h1 class="text-xl font-bold">MongoDB View</h1>
+            </div>
+            <nav>
+                <a href="#admin" class="nav-link active">
+                    <i class="fas fa-home mr-2"></i>Dashboard
+                </a>
+                <a href="/students" class="nav-link">
+                    <i class="fas fa-graduation-cap mr-2"></i>Students
+                </a>
+                <a href="/analytics" class="nav-link">
+                    <i class="fas fa-chart-bar mr-2"></i>Analytics
+                </a>
+                <a href="/settings" class="nav-link">
+                    <i class="fas fa-cog mr-2"></i>Settings
+                </a>
+                <a href="/profile" class="nav-link">
+                    <i class="fas fa-user mr-2"></i>Profile
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <p class="version">v1.0.0</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- New combined header -->
+            <header class="enhanced-header">
+                <div class="header-main">
+                    <!-- Search moved to the left side -->
+                    <div class="search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="global-search" placeholder="Search...">
+                    </div>
+                    <div class="header-actions">
+                        <span class="date-display">{{ current_date }}</span>
+                        <!-- <button class="btn-help" title="Help">
+                            <i class="fas fa-question-circle"></i>
+                        </button> -->
+                        <button class="refresh-btn" title="Refresh">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <!-- User profile with improved dropdown menu -->
+                        <div class="user-profile" title="Administrator">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                                <span class="status-indicator active"></span>
+                            </div>
+                            <!-- Improved dropdown menu structure for user details -->
+                            <div class="user-dropdown">
+                                <div class="user-dropdown-header">
+                                    <span class="user-name">Administrator</span>
+                                    <span class="user-status"><i class="fas fa-circle"></i> Active</span>
+                                </div>
+                                <div class="user-dropdown-body">
+                                    <div class="user-info-item">
+                                        <i class="fas fa-id-badge"></i>
+                                        <span>Role: Admin</span>
+                                    </div>
+                                    <div class="user-info-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span>Session: {{ session_time }}</span>
+                                    </div>
+                                    <div class="user-info-item">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>Last login: Today</span>
+                                    </div>
+                                </div>
+                                <div class="user-dropdown-footer">
+                                    <button class="logout-btn" onclick="logout()">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- Welcome Card and rest of content -->
+                <div id="admin" class="welcome-card">
+                    <div class="welcome-content">
+                        <div class="welcome-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="welcome-text">
+                            <h2>Welcome to MongoDB Viewer</h2>
+                            <p>This dashboard gives you an overview of your MongoDB collections and documents. Use the tools below to explore and manage your data efficiently.</p>
+                        </div>
+                    </div>
+                    <div class="welcome-actions">
+                        <button class="welcome-btn">
+                            <i class="fas fa-book"></i>
+                            Documentation
+                        </button>
+                        <button class="welcome-btn">
+                            <i class="fas fa-video"></i>
+                            Tutorial
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stats-card">                         
+                        <i class="fas fa-calendar-alt stats-icon"></i>                         
+                        <div class="stats-info">                             
+                            <h3>Event Name</h3>                             
+                            <p class="stats-number">GitHub</p>                         
+                        </div>                     
+                    </div>                                        
+                    <div class="stats-card">                         
+                        <i class="fas fa-clipboard-list stats-icon"></i>                         
+                        <div class="stats-info">                             
+                            <h3>Unique Fields</h3>                             
+                            <p class="stats-number">{{ all_docs[0].keys()|list|length if all_docs }}</p>                         
+                        </div>                     
+                    </div>                     
+                    
+                    <div class="stats-card">                         
+                        <i class="fas fa-folder-open stats-icon"></i>                         
+                        <div class="stats-info">                             
+                            <h3>Stored Documents</h3>                             
+                            <p class="stats-number">MongoDB</p>                         
+                        </div>                     
+                    </div>                     
+                    
+                    <div class="stats-card">                         
+                        <i class="fas fa-users stats-icon"></i>                         
+                        <div class="stats-info">                             
+                            <h3>Total Users</h3>                             
+                            <p class="stats-number">{{ all_docs|length }}</p>                         
+                        </div>                     
+                    </div>
+                    
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <script>
+        // Prevent going back to the page after logout
+        function logout() {
+            // Redirect to logout endpoint
+            window.location.href = "{{ url_for('logout') }}";
+            
+            // Prevent back navigation after logout
+            window.onpageshow = function(event) {
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            };
+        }
+    
+        $(document).ready(function() {
+            // Destroy DataTable if it exists
+            if ($.fn.DataTable.isDataTable('#allDocsTable')) {
+                $('#allDocsTable').DataTable().destroy();
+            }
+            
+            // Initialize with new settings
+            $('#allDocsTable').DataTable({
+                responsive: true,
+                pageLength: 10,
+                // lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                searching: true,
+                ordering: true,
+                info: true,
+                autoWidth: false,
+                language: {
+                    search: "<i class='fas fa-search'></i>",
+                    searchPlaceholder: "Search documents...",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ documents",
+                    infoEmpty: "Showing 0 to 0 of 0 documents",
+                    infoFiltered: "(filtered from _MAX_ total documents)"
+                },
+                initComplete: function() {
+                    $('.dataTables_filter input').css('width', '250px');
+                }
+            });
+
+            // Display current date in header
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            $('.date-display').text(now.toLocaleDateString('en-US', options));
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set a data attribute on body element to hold welcome status
+            const welcomeStatus = document.body.getAttribute('data-welcome-status');
+            const dashboard = document.getElementById('main-dashboard');
+            const loader = document.getElementById('welcome-loader');
+            
+            if (welcomeStatus === 'show') {
+                // Hide dashboard, show loader first
+                if (dashboard) {
+                    dashboard.classList.add('dashboard-hidden');
+                }
+                
+                if (loader) {
+                    loader.classList.remove('hidden');
+                }
+                
+                // Show welcome SweetAlert
+                Swal.fire({
+                    title: 'Welcome, {{ username }}!',
+                    text: 'You have successfully logged in to MongoDB Dashboard',
+                    icon: 'success',
+                    confirmButtonText: 'Continue to Dashboard',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    customClass: {
+                        popup: 'welcome-popup',
+                        title: 'welcome-title',
+                        confirmButton: 'welcome-confirm-button'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Make dashboard visible
+                        if (dashboard) {
+                            dashboard.classList.add('dashboard-visible');
+                        }
+                        
+                        // Keep loader visible during transition
+                        // Scroll to dashboard home section
+                        try {
+                            const dashboardElement = document.getElementById('admin');
+                            if (dashboardElement) {
+                                // First set the location hash for URL consistency
+                                window.location.hash = 'admin';
+                                
+                                // Then scroll to the element with a slight delay
+                                setTimeout(() => {
+                                    dashboardElement.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'start'
+                                    });
+                                    
+                                    // Hide loader after scrolling completes
+                                    setTimeout(() => {
+                                        if (loader) {
+                                            loader.classList.add('hidden');
+                                        }
+                                    }, 500);
+                                }, 100);
+                            }
+                        } catch (error) {
+                            console.error("Error scrolling to dashboard:", error);
+                            // Hide loader if error occurs
+                            if (loader) {
+                                loader.classList.add('hidden');
+                            }
+                        }
+                    }
+                });
+            } else {
+                // If no welcome alert, make dashboard visible immediately
+                if (dashboard) {
+                    dashboard.classList.add('dashboard-visible');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

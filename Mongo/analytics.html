@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+    <style>
+        /* Fullscreen loader styles */
+        .fullscreen-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(245, 248, 254, 0.9);
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+        
+        .loader-spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .loader-text {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Make SweetAlert appear above the loader */
+        .swal2-container {
+            z-index: 2000 !important;
+        }
+        
+        /* Add this to hide the dashboard initially */
+        .dashboard-hidden {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .dashboard-visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Analytics specific styles */
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .chart-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chart-type-selector {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #3498db;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .metric-trend {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .trend-up {
+            color: #2ecc71;
+        }
+        
+        .trend-down {
+            color: #e74c3c;
+        }
+
+        /* User dropdown toggle styling */
+        .user-profile {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 250px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .user-dropdown.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .user-profile.active .user-avatar {
+            background-color: #f0f4f8;
+        }
+    </style>
+</head>
+<body>
+    <div id="loader" class="fullscreen-loader hidden">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading analytics data...</div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    
+    <div class="dashboard dashboard-visible" id="main-dashboard">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-database logo-icon"></i>
+                <h1 class="text-xl font-bold">MongoDB View</h1>
+            </div>
+            <nav>
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home mr-2"></i>Dashboard
+                </a>
+                <a href="/students" class="nav-link">
+                    <i class="fas fa-graduation-cap mr-2"></i>Students
+                </a>
+                <a href="/analytics" class="nav-link active">
+                    <i class="fas fa-chart-bar mr-2"></i>Analytics
+                </a>
+                <a href="/settings" class="nav-link">
+                    <i class="fas fa-cog mr-2"></i>Settings
+                </a>
+                <a href="/profile" class="nav-link">
+                    <i class="fas fa-user mr-2"></i>Profile
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <p class="version">v1.0.0</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="enhanced-header">
+                <div class="header-main">
+                    <!-- Search moved to the left side -->
+                    <div class="search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="global-search" placeholder="Search...">
+                    </div>
+                    <div class="header-actions">
+                        <span class="date-display">{{ current_date }}</span>
+                        <!-- <button class="btn-help" title="Help">
+                            <i class="fas fa-question-circle"></i>
+                        </button> -->
+                        <button class="refresh-btn" title="Refresh">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <!-- User profile with improved dropdown menu -->
+                        <div class="user-profile" title="Administrator">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                                <span class="status-indicator active"></span>
+                            </div>
+                            <!-- Improved dropdown menu structure for user details -->
+                            <div class="user-dropdown">
+                                <div class="user-dropdown-header">
+                                    <span class="user-name">Administrator</span>
+                                    <span class="user-status"><i class="fas fa-circle"></i> Active</span>
+                                </div>
+                                <div class="user-dropdown-body">
+                                    <div class="user-info-item">
+                                        <i class="fas fa-id-badge"></i>
+                                        <span>Role: Admin</span>
+                                    </div>
+                                    <div class="user-info-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span>Session: {{ session_time }}</span>
+                                    </div>
+                                    <div class="user-info-item">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>Last login: Today</span>
+                                    </div>
+                                </div>
+                                <div class="user-dropdown-footer">
+                                    <button class="logout-btn" onclick="logout()">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="welcome-card">
+                    <div class="welcome-content">
+                        <div class="welcome-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="welcome-text">
+                            <h2>Analytics Dashboard</h2>
+                            <p>Visualize and analyze your MongoDB data with powerful insights and metrics.</p>
+                        </div>
+                    </div>
+                    <div class="welcome-actions">
+                        <button class="welcome-btn" id="export-analytics">
+                            <i class="fas fa-file-export"></i>
+                            Export Data
+                        </button>
+                        <button class="welcome-btn" id="customize-view">
+                            <i class="fas fa-sliders-h"></i>
+                            Customize View
+                        </button>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <i class="fas fa-users fa-2x" style="color: #3498db;"></i>
+                        <div class="metric-value">{{ total_users }}</div>
+                        <div class="metric-label">Total Users</div>
+                        <div class="metric-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> {{ user_growth }}%
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <i class="fas fa-database fa-2x" style="color: #9b59b6;"></i>
+                        <div class="metric-value">{{ db_size }}</div>
+                        <div class="metric-label">Database Size</div>
+                        <div class="metric-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> {{ db_growth }}%
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <i class="fas fa-bolt fa-2x" style="color: #f39c12;"></i>
+                        <div class="metric-value">{{ avg_query_time }}ms</div>
+                        <div class="metric-label">Avg Query Time</div>
+                        <div class="metric-trend trend-down">
+                            <i class="fas fa-arrow-down"></i> {{ query_improvement }}%
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <i class="fas fa-calendar-check fa-2x" style="color: #2ecc71;"></i>
+                        <div class="metric-value">{{ active_sessions }}</div>
+                        <div class="metric-label">Active Sessions</div>
+                        <div class="metric-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> {{ session_growth }}%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">User Growth Over Time</div>
+                        <div class="chart-actions">
+                            <button class="btn btn-sm btn-outline-secondary" id="refreshUserChart" title="Refresh">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" title="Download">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="userGrowthChartContainer" class="chart-image-container">
+                        <img src="{{ user_growth_chart }}" alt="User Growth Chart" class="img-fluid" id="userGrowthImage">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <div class="chart-title">Data Distribution</div>
+                                <div class="chart-actions">
+                                    <button class="btn btn-sm btn-outline-secondary" title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-image-container">
+                                <img src="{{ distribution_chart }}" alt="Data Distribution" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <div class="chart-title">Query Performance</div>
+                                <div class="chart-actions">
+                                    <button class="btn btn-sm btn-outline-secondary" title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-image-container">
+                                <img src="{{ performance_chart }}" alt="Query Performance" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <!-- Add dashboard.js for navigation and dropdown functionality -->
+    <script src="dashboard.js"></script>
+    <script>
+        function logout() {
+            window.location.href = "{{ url_for('logout') }}";
+            window.onpageshow = function(event) {
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            };
+        }
+    
+        $(document).ready(function() {
+            // Display current date in header
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            $('.date-display').text(now.toLocaleDateString('en-US', options));
+            
+            // Add CSS for chart images with better visibility
+            $("<style>")
+                .prop("type", "text/css")
+                .html(`
+                    .chart-image-container {
+                        background-color: white;
+                        border-radius: 8px;
+                        padding: 15px;
+                        text-align: center;
+                        min-height: 250px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        position: relative;
+                    }
+                    .chart-image-container img {
+                        max-width: 100%;
+                        max-height: 300px;
+                        transition: transform 0.3s ease;
+                    }
+                    .chart-image-container img:hover {
+                        transform: scale(1.02);
+                    }
+                    .chart-image-container.loading::after {
+                        content: 'Loading...';
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: rgba(255,255,255,0.8);
+                        padding: 10px 20px;
+                        border-radius: 4px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+                `)
+                .appendTo("head");
+            
+            // Check if chart images loaded correctly, show error fallback if needed
+            $(".chart-image-container img").on('error', function() {
+                $(this).parent().html(`
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                        <p>Chart could not be loaded</p>
+                        <button class="btn btn-sm btn-outline-primary retry-load-btn">
+                            <i class="fas fa-sync-alt"></i> Retry
+                        </button>
+                    </div>
+                `);
+            });
+            
+            // Handle retry button clicks
+            $(document).on('click', '.retry-load-btn', function() {
+                window.location.reload();
+            });
+            
+            // Add event listener for refresh button
+            $('#refresh-analytics').click(function() {
+                const loader = document.getElementById('loader');
+                loader.classList.remove('hidden');
+                
+                // Simulate refresh with delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            });
+            
+            // Add refresh for individual chart
+            $('#refreshUserChart').click(function() {
+                const button = $(this);
+                const originalHtml = button.html();
+                
+                // Show loading indicator on button
+                button.html('<i class="fas fa-spinner fa-spin"></i>');
+                
+                // Make AJAX request to refresh just this chart
+                $.ajax({
+                    url: '/api/refresh-chart/user-growth',
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success && response.image_path) {
+                            // Add timestamp to prevent browser caching
+                            const timestamp = new Date().getTime();
+                            const imageSrc = response.image_path + '?t=' + timestamp;
+                            $('#userGrowthImage').attr('src', imageSrc);
+                            
+                            // Show success message
+                            Swal.fire({
+                                title: 'Chart Updated',
+                                text: 'The chart has been refreshed with new data',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to refresh chart',
+                            icon: 'error'
+                        });
+                    },
+                    complete: function() {
+                        // Restore original button content
+                        button.html(originalHtml);
+                    }
+                });
+            });
+            
+            // Add export functionality
+            $('#export-analytics').click(function() {
+                Swal.fire({
+                    title: 'Export Analytics Data',
+                    text: 'Choose your export format',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'CSV',
+                    cancelButtonText: 'PDF',
+                    showDenyButton: true,
+                    denyButtonText: 'Excel'
+                }).then((result) => {
+                    if (result.isConfirmed || result.isDenied || result.dismiss === Swal.DismissReason.cancel) {
+                        let format = 'CSV';
+                        if (result.isDenied) format = 'Excel';
+                        if (result.dismiss === Swal.DismissReason.cancel) format = 'PDF';
+                        
+                        // Show loading indicator
+                        Swal.fire({
+                            title: 'Exporting...',
+                            text: `Preparing your ${format} export`,
+                            timer: 2000,
+                            timerProgressBar: true,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        }).then(() => {
+                            // Make actual API call to download the file
+                            window.location.href = `/api/export-analytics/${format.toLowerCase()}`;
+                            
+                            // Show success message
+                            setTimeout(() => {
+                                Swal.fire('Export Complete', `Your ${format} file has been downloaded`, 'success');
+                            }, 1000);
+                        });
+                    }
+                });
+            });
+            
+            // Add customize view functionality
+            $('#customize-view').click(function() {
+                Swal.fire({
+                    title: 'Customize Dashboard',
+                    html: `
+                        <div class="customize-options">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="showUserGrowth" checked>
+                                <label class="form-check-label" for="showUserGrowth">Show User Growth Chart</label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="showDistribution" checked>
+                                <label class="form-check-label" for="showDistribution">Show Data Distribution</label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="showPerformance" checked>
+                                <label class="form-check-label" for="showPerformance">Show Query Performance</label>
+                            </div>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Apply',
+                    preConfirm: () => {
+                        return {
+                            userGrowth: $('#showUserGrowth').is(':checked'),
+                            distribution: $('#showDistribution').is(':checked'),
+                            performance: $('#showPerformance').is(':checked')
+                        };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Apply user preferences
+                        if (!result.value.userGrowth) {
+                            $('#userGrowthChartContainer').closest('.chart-container').hide();
+                        } else {
+                            $('#userGrowthChartContainer').closest('.chart-container').show();
+                        }
+                        
+                        // Handle distribution chart visibility
+                        if (!result.value.distribution) {
+                            $('.chart-title:contains("Data Distribution")').closest('.chart-container').hide();
+                        } else {
+                            $('.chart-title:contains("Data Distribution")').closest('.chart-container').show();
+                        }
+                        
+                        // Handle performance chart visibility
+                        if (!result.value.performance) {
+                            $('.chart-title:contains("Query Performance")').closest('.chart-container').hide();
+                        } else {
+                            $('.chart-title:contains("Query Performance")').closest('.chart-container').show();
+                        }
+                        
+                        // Save preferences to localStorage
+                        localStorage.setItem('analyticsPreferences', JSON.stringify(result.value));
+                    }
+                });
+            });
+            
+            // Apply saved preferences on page load
+            const savedPreferences = localStorage.getItem('analyticsPreferences');
+            if (savedPreferences) {
+                try {
+                    const prefs = JSON.parse(savedPreferences);
+                    
+                    // Apply saved preferences
+                    if (!prefs.userGrowth) {
+                        $('#userGrowthChartContainer').closest('.chart-container').hide();
+                    }
+                    
+                    if (!prefs.distribution) {
+                        $('.chart-title:contains("Data Distribution")').closest('.chart-container').hide();
+                    }
+                    
+                    if (!prefs.performance) {
+                        $('.chart-title:contains("Query Performance")').closest('.chart-container').hide();
+                    }
+                } catch (e) {
+                    console.error('Error applying saved preferences:', e);
+                }
+            }
+            
+            // Add user dropdown toggle functionality
+            $('.user-profile').off('click').on('click', function(e) {
+                e.stopPropagation();
+                $(this).toggleClass('active');
+                $(this).find('.user-dropdown').toggleClass('visible');
+            });
+            
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.user-profile').length) {
+                    $('.user-profile').removeClass('active');
+                    $('.user-dropdown').removeClass('visible');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
