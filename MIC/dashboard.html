@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MKCE Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <main class="dashboard-container">
+        <div class="sidebar">
+            <div class="profile-section">
+                <h2>MKCE INFORMATION CORNER</h2>
+            </div>
+            <div class="menu-items">
+                <a href="#" class="menu-item active"><i class="ri-dashboard-line"></i> Dashboard</a>
+                <a href="#" class="menu-item"><i class="ri-user-line"></i> Profile</a>
+                <a href="#" class="menu-item"><i class="ri-calendar-check-line"></i> Attendance</a>
+                <a href="#" class="menu-item"><i class="ri-time-line"></i> Timetable</a>
+                <a href="#" class="menu-item"><i class="ri-file-list-3-line"></i> Results</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <div class="breadcrumb">
+                        <span>Home</span>
+                        <span class="separator">/</span>
+                        <span class="current">Dashboard</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile">
+                        <div class="user-dropdown">
+                            <div class="user-info" onclick="toggleDropdown()">
+                                <div class="user-avatar">
+                                    <i class="ri-user-3-line"></i>
+                                </div>
+                            </div>
+                            <div class="dropdown-menu" id="userDropdown">
+                                <div class="dropdown-header">
+                                    <h3>{username}</h3>
+                                    <p class="user-dept">{department}</p>
+                                    <p class="user-id">{id_type}: {fid}</p>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <a href="#" class="dropdown-item"><i class="ri-user-settings-line"></i> Profile</a>
+                                <a href="#" class="dropdown-item"><i class="ri-settings-3-line"></i> Settings</a>
+                                <a href="#" class="dropdown-item" onclick="openChangePasswordModal()"><i class ="ri-settings-3-line"></i> Change Password</a>
+                                <div class="dropdown-divider"></div>
+                                <a href="/logout" class="dropdown-item text-danger"><i class="ri-logout-box-r-line"></i> Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <div class="welcome-card">
+                    <div class="welcome-text">
+                        <h2>Welcome back, {username}!</h2>
+                        <p>Role: {role} | Department: {department}</p>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <i class="ri-user-line card-icon"></i>
+                        <div class="card-info">
+                            <h3>{total_students}</h3>
+                            <p>Total Students</p>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <i class="ri-group-line card-icon"></i>
+                        <div class="card-info">
+                            <h3>{dept_students}</h3>
+                            <p>Department Students</p>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <i class="ri-calendar-check-line card-icon"></i>
+                        <div class="card-info">
+                            <h3>{attendance_percent}%</h3>
+                            <p>Today's Attendance</p>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <i class="ri-file-list-3-line card-icon"></i>
+                        <div class="card-info">
+                            <h3>{pending_tasks}</h3>
+                            <p>Pending Tasks</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to toggle dropdown
+            function toggleDropdown() {
+                const dropdown = document.getElementById('userDropdown');
+                const arrow = document.querySelector('.dropdown-arrow');
+                dropdown.classList.toggle('show');
+                arrow.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : '';
+            }
+
+            // Add click event to user info
+            document.querySelector('.user-info').addEventListener('click', toggleDropdown);
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.user-dropdown')) {
+                    const dropdown = document.getElementById('userDropdown');
+                    const arrow = document.querySelector('.dropdown-arrow');
+                    dropdown.classList.remove('show');
+                    arrow.style.transform = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

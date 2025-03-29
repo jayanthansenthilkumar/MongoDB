@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Basic Profile - MIC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="icon" href="assets/images/icon.png" type="image/png">
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .profile-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .form-field {
+            margin-bottom: 16px;
+        }
+        .form-field label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .form-field .value {
+            font-weight: 500;
+            color: var(--text);
+            padding: 8px 12px;
+            background: var(--primary-bg);
+            border-radius: 6px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+        .profile-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+        .profile-card h2 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-bg);
+        }
+        .student-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            background: var(--primary-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .student-photo i {
+            font-size: 60px;
+            color: var(--primary);
+        }
+        .student-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        @media (max-width: 768px) {
+            .profile-form {
+                grid-template-columns: 1fr;
+            }
+        }
+        .save-button-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .save-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(84, 105, 212, 0.25);
+        }
+        
+        .save-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(84, 105, 212, 0.35);
+        }
+        
+        .save-button:active {
+            transform: translateY(1px);
+        }
+        
+        .completion-message {
+            color: #4CAF50;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .completion-message i {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <main class="dashboard-container">
+        <div class="sidebar">
+            <div class="profile-section">
+                <h2>MKCE INFORMATION CORNER</h2>
+            </div>
+            <div class="menu-items">
+                <a href="/student-dashboard" class="menu-item"><i class="ri-home-4-line"></i>&nbsp;Dashboard</a>
+                <a href="/profile" class="menu-item"><i class="ri-user-line"></i>&nbsp;Profile</a>
+                <div class="menu-item-dropdown">
+                    <a href="#" class="menu-item profile-dropdown-trigger active">
+                        <i class="ri-user-settings-line"></i>&nbsp;Edit Profile
+                        <i class="ri-arrow-down-s-line dropdown-icon"></i>
+                    </a>
+                    <div class="submenu show" id="profileDropdown">
+                        <a href="/student-basic" class="submenu-item active"><i class="ri-profile-line"></i>&nbsp;Basic Profile</a>
+                        <a href="#" class="submenu-item"><i class="ri-contacts-line"></i>&nbsp;Academic Details</a>
+                        <a href="#" class="submenu-item"><i class="ri-parent-line"></i>&nbsp;Exam Details</a>
+                    </div>
+                </div>
+                <a href="#" class="menu-item"><i class="ri-bus-line"></i>&nbsp;Bus Booking</a>
+                <a href="#" class="menu-item"><i class="ri-file-paper-2-line"></i>&nbsp;Apply Bonafide</a>
+                <a href="#" class="menu-item"><i class="ri-feedback-line"></i>&nbsp;Feedback Corner</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <div class="breadcrumb">
+                        <span>Home</span>
+                        <span class="separator">/</span>
+                        <span>Edit Profile</span>
+                        <span class="separator">/</span>
+                        <span class="current">Basic Profile</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile">
+                        <div class="user-dropdown">
+                            <div class="user-info" onclick="toggleDropdown()">
+                                <div class="user-avatar">
+                                    <i class="ri-user-3-line"></i>
+                                </div>
+                            </div>
+                            <div class="dropdown-menu" id="userDropdown">
+                                <div class="dropdown-header">
+                                    <h3>{username}</h3>
+                                    <p class="user-dept">{department}</p>
+                                    <p class="user-id">{id_type}: {sid}</p>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <a href="/profile" class="dropdown-item"><i class="ri-user-settings-line"></i> Profile</a>
+                                <a href="#" class="dropdown-item"><i class="ri-settings-3-line"></i> Settings</a>
+                                <a href="#" class="dropdown-item" onclick="openChangePasswordModal()"><i class="ri-lock-password-line"></i> Change Password</a>
+                                <div class="dropdown-divider"></div>
+                                <a href="/logout" class="dropdown-item text-danger"><i class="ri-logout-box-r-line"></i> Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <div class="welcome-card">
+                    <div class="welcome-text">
+                        <h2>Basic Profile</h2>
+                        <p>View and manage your personal information</p>
+                    </div>
+                </div>
+
+                <div class="profile-card">
+                    <h2>Personal Information</h2>
+                    <div class="profile-form">
+                        <div>
+                            <div class="student-photo">
+                                {profile_photo}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="form-field">
+                                <label>Full Name</label>
+                                <div class="value">{student_name}</div>
+                            </div>
+                            <div class="form-field">
+                                <label>Student ID</label>
+                                <div class="value">{sid}</div>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label>Email Address</label>
+                            <div class="value">{email}</div>
+                        </div>
+                        <div class="form-field">
+                            <label>Phone Number</label>
+                            <div class="value">{phone}</div>
+                        </div>
+                        <div class="form-field">
+                            <label>Date of Birth</label>
+                            <div class="value">{dob}</div>
+                        </div>
+                        <div class="form-field">
+                            <label>Gender</label>
+                            <div class="value">{gender}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-card">
+                    <h2>Address Information</h2>
+                    <div class="profile-form">
+                        <div class="form-field">
+                            <label>Address Line 1</label>
+                            <div class="value">{address1}</div>
+                        </div>
+                        <div class="form-field">
+                            <label>Address Line 2</label>
+                            <div class="value">{address2}</div>
+                        </div>
+                        <div class="form-field">
+                            <label>City</label>
+                            <div class="value">{city}</div>
+                        </div>
+                        <div class="form-field">
+                            <label>State</label>
+                            <div class="value">{state}</div>
+                        </div>
+                        <div class="form-field">
+                            <label>Pincode</label>
+                            <div class="value">{pincode}</div>
+                        </div>
+                        <div class="form-field">
+                            <label>Country</label>
+                            <div class="value">{country}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hidden fields to store completion percentages -->
+                <input type="hidden" id="basicCompletion" value="{bc_completion}">
+                <input type="hidden" id="academicCompletion" value="{ac_completion}">
+                
+                <div class="save-button-container" id="saveButtonContainer">
+                    <button type="button" id="saveProfileBtn" class="save-button">
+                        <i class="ri-save-line"></i> Save Profile
+                    </button>
+                    <p class="completion-message" id="completionMessage" style="display: none;">
+                        <i class="ri-check-double-line"></i> Your profile is complete!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="changePasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Change Password</h3>
+                <span class="close-modal" onclick="closeChangePasswordModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm" onsubmit="handlePasswordChange(event)">
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <div class="password-field">
+                            <input type="password" id="newPassword" required>
+                            <i class="ri-eye-line toggle-password" onclick="togglePassword('newPassword', this)"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <div class="password-field">
+                            <input type="password" id="confirmPassword" required>
+                            <i class="ri-eye-line toggle-password" onclick="togglePassword('confirmPassword', this)"></i>
+                        </div>
+                    </div>
+                    <div class="error-message" id="passwordError"></div>
+                    <div class="modal-footer">
+                        <button type="button" onclick="closeChangePasswordModal()">Cancel</button>
+                        <button type="submit">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to toggle profile dropdown
+            const profileDropdownTrigger = document.querySelector('.profile-dropdown-trigger');
+            const profileDropdown = document.getElementById('profileDropdown');
+            const dropdownIcon = profileDropdownTrigger.querySelector('.dropdown-icon');
+            
+            window.toggleDropdown = function() {
+                const dropdown = document.getElementById('userDropdown');
+                dropdown.classList.toggle('show');
+            }
+
+            profileDropdownTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                profileDropdown.classList.toggle('show');
+                dropdownIcon.style.transform = profileDropdown.classList.contains('show') ? 'rotate(180deg)' : '';
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', (e) => {
+                const userDropdown = document.getElementById('userDropdown');
+                if (!e.target.closest('.menu-item-dropdown')) {
+                    profileDropdown.classList.remove('show');
+                    dropdownIcon.style.transform = '';
+                }
+                if (!e.target.closest('.user-dropdown') && !e.target.closest('.user-info')) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+
+            // Check profile completion status and show/hide save button
+            checkProfileCompletion();
+        });
+
+        function openChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            modal.classList.add('show');
+            document.getElementById('userDropdown').classList.remove('show');
+            setTimeout(() => {
+                modal.querySelector('.modal-content').style.transform = 'translateY(0)';
+                modal.querySelector('.modal-content').style.opacity = '1';
+            }, 10);
+        }
+
+        function closeChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            modal.querySelector('.modal-content').style.transform = 'translateY(-20px)';
+            modal.querySelector('.modal-content').style.opacity = '0';
+            setTimeout(() => {
+                modal.classList.remove('show');
+                document.getElementById('changePasswordForm').reset();
+                document.getElementById('passwordError').textContent = '';
+            }, 300);
+        }
+
+        async function handlePasswordChange(event) {
+            event.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Passwords do not match!'
+                });
+                return;
+            }
+            // Close modal before showing loading state
+            closeChangePasswordModal();
+            try {
+                // Show loading state
+                Swal.fire({
+                    title: 'Updating Password',
+                    text: 'Please wait...',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch('/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        newPassword
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Password changed successfully!',
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while changing password.'
+                });
+            }
+        }
+
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('ri-eye-line', 'ri-eye-off-line');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('ri-eye-off-line', 'ri-eye-line');
+            }
+        }
+
+        function checkProfileCompletion() {
+            const basicCompletion = parseFloat(document.getElementById('basicCompletion').value) || 0;
+            const academicCompletion = parseFloat(document.getElementById('academicCompletion').value) || 0;
+            const saveButton = document.getElementById('saveProfileBtn');
+            const completionMessage = document.getElementById('completionMessage');
+            
+            // If both completions are 100%, hide the save button and show completion message
+            if (basicCompletion === 100 && academicCompletion === 100) {
+                saveButton.style.display = 'none';
+                completionMessage.style.display = 'flex';
+            } else {
+                saveButton.style.display = 'flex';
+                completionMessage.style.display = 'none';
+                
+                // Add click handler for the save button
+                saveButton.addEventListener('click', function() {
+                    // Show confirmation dialog
+                    Swal.fire({
+                        title: 'Save Profile?',
+                        text: 'Your profile information will be updated.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#5469d4',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, save it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Show loading
+                            Swal.fire({
+                                title: 'Saving...',
+                                text: 'Updating your profile information',
+                                allowOutsideClick: false,
+                                showConfirmButton: false,
+                                willOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            // Simulate saving (replace with actual API call later)
+                            setTimeout(() => {
+                                Swal.fire(
+                                    'Saved!',
+                                    'Your profile has been updated successfully.',
+                                    'success'
+                                ).then(() => {
+                                    // Refresh the page
+                                    window.location.reload();
+                                });
+                            }, 1500);
+                        }
+                    });
+                });
+            }
+        }
+    </script>
+</body>
+</html>

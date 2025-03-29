@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MIC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="icon" href="assets/images/icon.png" type="image/png">
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <main class="dashboard-container">
+        <div class="sidebar">
+            <div class="profile-section">
+                <h2>MKCE INFORMATION CORNER</h2>
+            </div>
+            <div class="menu-items">
+                <a href="#" class="menu-item active"><i class="ri-home-4-line text-primary"></i>&nbsp;Dashboard</a>
+                <a href="/profile" class="menu-item"><i class="ri-user-line"></i>&nbsp;Profile</a>
+                <div class="menu-item-dropdown">
+                    <a href="#" class="menu-item profile-dropdown-trigger">
+                        <i class="ri-user-settings-line"></i>&nbsp;Edit Profile
+                        <i class="ri-arrow-down-s-line dropdown-icon"></i>
+                    </a>
+                    <div class="submenu" id="profileDropdown">
+                        <a href="/student-basic" class="submenu-item"><i class="ri-profile-line"></i>&nbsp;Basic Profile</a>
+                        <a href="#" class="submenu-item"><i class="ri-contacts-line"></i>&nbsp;Academic Details</a>
+                        <a href="#" class="submenu-item"><i class="ri-parent-line"></i>&nbsp;Exam Details</a>
+                    </div>
+                </div>
+                <a href="#" class="menu-item"><i class="ri-bus-line"></i>&nbsp;Bus Booking</a>
+                <a href="#" class="menu-item"><i class="ri-file-paper-2-line"></i>&nbsp;Apply Bonafide</a>
+                <a href="#" class="menu-item"><i class="ri-feedback-line"></i>&nbsp;Feedback Corner</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <div class="breadcrumb">
+                        <span>Home</span>
+                        <span class="separator">/</span>
+                        <span class="current">Dashboard</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile">
+                        <div class="user-dropdown">
+                            <div class="user-info" onclick="toggleDropdown()">
+                                <div class="user-avatar">
+                                    <i class="ri-user-3-line"></i>
+                                </div>
+                            </div>
+                            <div class="dropdown-menu" id="userDropdown">
+                                <div class="dropdown-header">
+                                    <h3>{username}</h3>
+                                    <p class="user-dept">{department}</p>
+                                    <p class="user-id">{id_type}: {sid}</p>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <a href="/profile" class="dropdown-item"><i class="ri-user-settings-line"></i> Profile</a>
+                                <a href="#" class="dropdown-item"><i class="ri-settings-3-line"></i> Settings</a>
+                                <a href="#" class="dropdown-item" onclick="openChangePasswordModal()"><i class="ri-lock-password-line"></i> Change Password</a>
+                                <div class="dropdown-divider"></div>
+                                <a href="/logout" class="dropdown-item text-danger"><i class="ri-logout-box-r-line"></i> Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <div class="welcome-card">
+                    <div class="welcome-text">
+                        <h2>Welcome back, {student_name}!</h2>
+                        <p>Department: {department} | Batch: {batch}</p>
+                    </div>
+                </div>
+
+                <div class="profile-overview">
+                    <h2>Profile Overview</h2>
+                    <div class="progress-bars">
+                        <div class="progress-item">
+                            <div class="progress-label">
+                                <span>Basic Profile</span>
+                                <span class="attendance-value">{bc_attendance}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress attendance-progress"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-label">
+                                <span>Academic Profile</span>
+                                <span class="academic-value">{ac_attendance}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress academic-progress"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="changePasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Change Password</h3>
+                <span class="close-modal" onclick="closeChangePasswordModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm" onsubmit="handlePasswordChange(event)">
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <div class="password-field">
+                            <input type="password" id="newPassword" required>
+                            <i class="ri-eye-line toggle-password" onclick="togglePassword('newPassword', this)"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <div class="password-field">
+                            <input type="password" id="confirmPassword" required>
+                            <i class="ri-eye-line toggle-password" onclick="togglePassword('confirmPassword', this)"></i>
+                        </div>
+                    </div>
+                    <div class="error-message" id="passwordError"></div>
+                    <div class="modal-footer">
+                        <button type="button" onclick="closeChangePasswordModal()">Cancel</button>
+                        <button type="submit">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to toggle profile dropdown
+            const profileDropdownTrigger = document.querySelector('.profile-dropdown-trigger');
+            const profileDropdown = document.getElementById('profileDropdown');
+            const dropdownIcon = profileDropdownTrigger.querySelector('.dropdown-icon');
+            
+            window.toggleDropdown = function() {
+                const dropdown = document.getElementById('userDropdown');
+                dropdown.classList.toggle('show');
+            }
+
+            profileDropdownTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                profileDropdown.classList.toggle('show');
+                dropdownIcon.style.transform = profileDropdown.classList.contains('show') ? 'rotate(180deg)' : '';
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', (e) => {
+                const userDropdown = document.getElementById('userDropdown');
+                if (!e.target.closest('.menu-item-dropdown')) {
+                    profileDropdown.classList.remove('show');
+                    dropdownIcon.style.transform = '';
+                }
+                if (!e.target.closest('.user-dropdown') && !e.target.closest('.user-info')) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+
+            // Initialize progress bars
+            initializeProgressBars();
+        });
+
+        function initializeProgressBars() {
+            // Handle Basic Profile Progress
+            const basicText = document.querySelector('.attendance-value').textContent;
+            const basicPercent = parseFloat(basicText) || 0;
+            const basicProgress = document.querySelector('.attendance-progress');
+            basicProgress.style.width = Math.min(Math.max(basicPercent, 0), 100) + '%';
+
+            // Handle Academic Profile Progress
+            const academicText = document.querySelector('.academic-value').textContent;
+            const academicPercent = parseFloat(academicText) || 0;
+            const academicProgress = document.querySelector('.academic-progress');
+            academicProgress.style.width = Math.min(Math.max(academicPercent, 0), 100) + '%';
+
+            // Set colors based on values
+            setProgressColors(basicProgress, basicPercent);
+            setProgressColors(academicProgress, academicPercent);
+        }
+
+        function setProgressColors(element, value) {
+            let color;
+            if (value >= 75) {
+                // Primary theme gradient
+                color = `linear-gradient(to right, var(--primary-dark), var(--primary))`;
+            } else if (value >= 50) {
+                // Primary light gradient
+                color = `linear-gradient(to right, var(--primary), var(--primary-light))`;
+            } else {
+                // Warning gradient
+                color = `linear-gradient(to right, #ff4b2b, var(--primary-light))`;
+            }
+            element.style.background = color;
+            // Add slight glow effect
+            element.style.boxShadow = `0 2px 8px ${value >= 75 ? 'rgba(84, 105, 212, 0.3)' : 'rgba(255, 75, 43, 0.3)'}`;
+        }
+
+        function openChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            modal.classList.add('show');
+            document.getElementById('userDropdown').classList.remove('show');
+            setTimeout(() => {
+                modal.querySelector('.modal-content').style.transform = 'translateY(0)';
+                modal.querySelector('.modal-content').style.opacity = '1';
+            }, 10);
+        }
+
+        function closeChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            modal.querySelector('.modal-content').style.transform = 'translateY(-20px)';
+            modal.querySelector('.modal-content').style.opacity = '0';
+            setTimeout(() => {
+                modal.classList.remove('show');
+                document.getElementById('changePasswordForm').reset();
+                document.getElementById('passwordError').textContent = '';
+            }, 300);
+        }
+
+        async function handlePasswordChange(event) {
+            event.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Passwords do not match!'
+                });
+                return;
+            }
+            // Close modal before showing loading state
+            closeChangePasswordModal();
+            try {
+                // Show loading state
+                Swal.fire({
+                    title: 'Updating Password',
+                    text: 'Please wait...',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch('/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        newPassword
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Password changed successfully!',
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while changing password.'
+                });
+            }
+        }
+
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('ri-eye-line', 'ri-eye-off-line');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('ri-eye-off-line', 'ri-eye-line');
+            }
+        }
+    </script>
+</body>
+</html>

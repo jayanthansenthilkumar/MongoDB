@@ -1,0 +1,2565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <style>
+        :root {
+            --primary: #4d61fc;
+            --primary-light: #6a7dfc;
+            --primary-dark: #3a4bcf;
+            --secondary: #f6515c;
+            --secondary-light: #ff747e;
+            --secondary-dark: #d43e48;
+            --success: #28c76f;
+            --success-light: #3ad884;
+            --success-dark: #1ea65a;
+            --warning: #ff9f43;
+            --warning-light: #ffad5c;
+            --warning-dark: #e08932;
+            --info: #00cfe8;
+            --info-light: #33d9ed;
+            --info-dark: #00a8bd;
+            --danger: #ea5455;
+            --danger-light: #f17576;
+            --danger-dark: #ce4243;
+            --background: #f8f9fa;
+            --dark-bg: #151521;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --dark-card-bg: rgba(30, 30, 45, 0.7);
+            --text: #4b4b4b;
+            --text-light: #6e6e6e;
+            --text-lighter: #979797;
+            --dark-text: #e0e0e0;
+            --dark-text-light: #b0b0b0;
+            --dark-text-lighter: #777777;
+            --border: rgba(0, 0, 0, 0.1);
+            --dark-border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --dark-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --sidebar-width: 260px;
+            --sidebar-collapsed: 80px;
+            --header-height: 70px;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.5;
+            overflow-x: hidden;
+            position: relative;
+            transition: background-color 0.5s ease;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(77, 97, 252, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(246, 81, 100, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(40, 199, 111, 0.05) 0%, transparent 50%);
+        }
+
+        body.dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(77, 97, 252, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(246, 81, 100, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(40, 199, 111, 0.1) 0%, transparent 50%);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode h1, 
+        body.dark-mode h2, 
+        body.dark-mode h3, 
+        body.dark-mode h4, 
+        body.dark-mode h5, 
+        body.dark-mode h6 {
+            color: var(--dark-text);
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+
+        a:hover {
+            color: var(--primary-dark);
+        }
+
+        button, .btn {
+            cursor: pointer;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        /* Blob Animation */
+        .blob-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Glass Effect */
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        body.dark-mode .glass {
+            background: var(--dark-card-bg);
+            border-color: var(--dark-border);
+            box-shadow: var(--dark-shadow);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, rgba(77, 97, 252, 0.95) 0%, rgba(102, 116, 224, 0.95) 100%);
+            color: white;
+            padding: 1.5rem;
+            transition: var(--transition);
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 5px 0 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        body.dark-mode .sidebar {
+            background: linear-gradient(135deg, rgba(30, 30, 60, 0.95) 0%, rgba(45, 45, 80, 0.95) 100%);
+            box-shadow: 5px 0 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo-container {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            color: var(--primary);
+            margin-right: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-container::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 25%, rgba(255, 255, 255, 0.3) 50%, transparent 75%);
+            top: -100%;
+            left: -100%;
+            animation: shine 5s infinite;
+        }
+
+        @keyframes shine {
+            0% { top: -100%; left: -100%; }
+            20% { top: 100%; left: 100%; }
+            100% { top: 100%; left: 100%; }
+        }
+
+        .sidebar-header h2 {
+            color: white;
+            margin: 0;
+            font-size: 1.25rem;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            transition: var(--transition);
+        }
+
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            transition: var(--transition);
+        }
+
+        .nav-item.active .nav-link,
+        .nav-link:hover {
+            color: white;
+        }
+
+        .nav-link i {
+            font-size: 1.2rem;
+            margin-right: 15px;
+            transition: var(--transition);
+        }
+
+        .nav-item.active .nav-link i {
+            transform: scale(1.1);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            transition: var(--transition);
+            min-height: 100vh;
+        }
+
+        /* Page Title */
+        .page-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-title h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: titleGradient 8s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes titleGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body.dark-mode .page-title h1 {
+            background: linear-gradient(135deg, #6a7dfc 0%, #ff747e 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        /* Stats Container */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .stat-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon::after {
+            content: '';
+            position: absolute;
+            width: 140%;
+            height: 140%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            top: -20%;
+            left: -20%;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .stat-card:hover .stat-icon::after {
+            opacity: 1;
+        }
+
+        .stat-icon.primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        }
+
+        .stat-icon.secondary {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+        }
+
+        .stat-icon.success {
+            background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
+        }
+
+        .stat-icon.warning {
+            background: linear-gradient(135deg, var(--warning) 0%, var(--warning-light) 100%);
+        }
+
+        .stat-info {
+            flex-grow: 1;
+        }
+
+        .stat-info h3 {
+            font-size: 1.8rem;
+            margin: 0 0 5px;
+            font-weight: 700;
+        }
+
+        .stat-info p {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        body.dark-mode .stat-info p {
+            color: var(--dark-text-light);
+        }
+
+        /* Cards */
+        .card {
+            margin-bottom: 2rem;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        body.dark-mode .card-header {
+            border-color: var(--dark-border);
+        }
+
+        .card-title {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+
+        .card-title i {
+            font-size: 1.3rem;
+            margin-right: 10px;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+
+        body.dark-mode .card-title i {
+            color: var(--primary-light);
+        }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            background: var(--background);
+            color: var(--text);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
+            top: -10%;
+            left: -10%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            transform: scale(0.8);
+            pointer-events: none;
+        }
+
+        .btn:hover::after {
+            opacity: 0.3;
+            transform: scale(1);
+        }
+
+        .btn i {
+            margin-right: 6px;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, var(--warning-light) 100%);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, var(--info) 0%, var(--info-light) 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, var(--danger-light) 100%);
+            color: white;
+        }
+
+        body.dark-mode .btn {
+            background: var(--dark-bg);
+            color: var(--dark-text);
+        }
+
+        /* Table Styles */
+        .table-container {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            position: relative;
+            padding: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            color: var(--text);
+            transition: var(--transition);
+        }
+
+        body.dark-mode table {
+            color: var(--dark-text);
+        }
+
+        thead {
+            background: rgba(0, 0, 0, 0.03);
+            transition: var(--transition);
+        }
+
+        body.dark-mode thead {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+            border-bottom: 2px solid var(--border);
+            position: relative;
+            transition: var(--transition);
+        }
+
+        body.dark-mode th {
+            color: var(--dark-text);
+            border-color: var(--dark-border);
+        }
+
+        th::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        th:hover::after {
+            width: 100%;
+        }
+
+        tr {
+            transition: var(--transition);
+        }
+
+        tbody tr:hover {
+            background: rgba(0, 0, 0, 0.02);
+            transform: translateY(-2px);
+        }
+
+        body.dark-mode tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        body.dark-mode td {
+            border-color: var(--dark-border);
+        }
+
+        .badge {
+            padding: 0.35rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+            transition: var(--transition);
+        }
+
+        .badge-admin {
+            background-color: rgba(77, 97, 252, 0.15);
+            color: var(--primary);
+        }
+
+        .badge-user {
+            background-color: rgba(40, 199, 111, 0.15);
+            color: var(--success);
+        }
+
+        .badge-editor {
+            background-color: rgba(255, 159, 67, 0.15);
+            color: var(--warning);
+        }
+
+        .badge-viewer {
+            background-color: rgba(0, 207, 232, 0.15);
+            color: var(--info);
+        }
+
+        body.dark-mode .badge-admin {
+            background-color: rgba(77, 97, 252, 0.25);
+        }
+
+        body.dark-mode .badge-user {
+            background-color: rgba(40, 199, 111, 0.25);
+        }
+
+        body.dark-mode .badge-editor {
+            background-color: rgba(255, 159, 67, 0.25);
+        }
+
+        body.dark-mode .badge-viewer {
+            background-color: rgba(0, 207, 232, 0.25);
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            width: 500px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.active .modal {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        body.dark-mode .modal-header {
+            border-color: var(--dark-border);
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--text);
+        }
+
+        body.dark-mode .modal-title {
+            color: var(--dark-text);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        body.dark-mode .modal-close {
+            color: var(--dark-text-light);
+        }
+
+        body.dark-mode .modal-close:hover {
+            color: var(--danger-light);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            padding: 1rem 1.5rem 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        body.dark-mode .modal-footer {
+            border-color: var(--dark-border);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var (--text);
+            transition: var(--transition);
+        }
+
+        body.dark-mode label {
+            color: var(--dark-text);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.7);
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="email"],
+        body.dark-mode input[type="number"],
+        body.dark-mode select,
+        body.dark-mode textarea {
+            background: rgba(30, 30, 45, 0.7);
+            border-color: var(--dark-border);
+            color: var(--dark-text);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(77, 97, 252, 0.1);
+        }
+
+        body.dark-mode input:focus,
+        body.dark-mode select:focus,
+        body.dark-mode textarea:focus {
+            box-shadow: 0 0 0 3px rgba(77, 97, 252, 0.2);
+        }
+
+        /* Alert Styles */
+        .alert {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            background: white;
+            color: var(--text);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 9998;
+            max-width: 350px;
+        }
+
+        body.dark-mode .alert {
+            background: var(--dark-bg);
+            color: var(--dark-text);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .alert.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .alert i {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .alert-success {
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-success i {
+            color: var(--success);
+        }
+
+        .alert-danger {
+            border-left: 4px solid var(--danger);
+        }
+
+        .alert-danger i {
+            color: var(--danger);
+        }
+
+        /* Loader */
+        .loader {
+            width: 40px;
+            height: 40px;
+            margin: 30px auto;
+            border: 3px solid rgba(77, 97, 252, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        body.dark-mode .loader {
+            border-color: rgba(77, 97, 252, 0.2);
+            border-top-color: var(--primary-light);
+        }
+
+        /* No Records */
+        .no-records {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .no-records {
+            color: var(--dark-text-light);
+        }
+
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            padding: 1rem 0;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        body.dark-mode .pagination-container {
+            border-color: var(--dark-border);
+        }
+
+        .pagination-info {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        body.dark-mode .pagination-info {
+            color: var(--dark-text-light);
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pagination-btn {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            color: var(--text);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        body.dark-mode .pagination-btn {
+            border-color: var(--dark-border);
+            color: var(--dark-text);
+        }
+
+        .pagination-btn:not(:disabled):hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn i {
+            font-size: 1.1rem;
+        }
+
+        .page-indicator {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .page-indicator {
+            color: var(--dark-text-light);
+        }
+
+        /* Loading Shimmer Effect */
+        .loading-shimmer {
+            background: linear-gradient(
+                90deg,
+                rgba(0, 0, 0, 0.06) 25%,
+                rgba(0, 0, 0, 0.12) 37%,
+                rgba(0, 0, 0, 0.06) 63%
+            );
+            background-size: 400% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        body.dark-mode .loading-shimmer {
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.06) 25%,
+                rgba(255, 255, 255, 0.12) 37%,
+                rgba(255, 255, 255, 0.06) 63%
+            );
+            background-size: 400% 100%;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0 50%; }
+        }
+
+        /* Tooltip */
+        [data-tooltip] {
+            position: relative;
+            cursor: pointer;
+        }
+
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        [data-tooltip]::before {
+            content: '';
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%) translateY(6px);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        [data-tooltip]:hover::after,
+        [data-tooltip]:hover::before {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-5px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            z-index: 1000;
+            transition: var(--transition);
+            border: 1px solid var(--border);
+        }
+
+        body.dark-mode .theme-toggle {
+            background: var(--dark-bg);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border-color: var(--dark-border);
+        }
+
+        .theme-toggle i {
+            font-size: 1.3rem;
+            color: var(--warning);
+            transition: var(--transition);
+        }
+
+        body.dark-mode .theme-toggle i {
+            color: var(--primary-light);
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: var(--sidebar-collapsed);
+                padding: 1rem 0.5rem;
+            }
+
+            .sidebar-header h2, 
+            .nav-link span {
+                display: none;
+            }
+
+            .logo-container {
+                margin: 0 auto;
+            }
+
+            .nav-link {
+                justify-content: center;
+                padding: 0.8rem;
+            }
+
+            .nav-link i {
+                margin: 0;
+                font-size: 1.4rem;
+            }
+
+            .main-content {
+                margin-left: var(--sidebar-collapsed);
+            }
+
+            .page-title {
+                padding: 1.2rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .card-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .page-title {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .pagination-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 0;
+                padding: 0;
+                opacity: 0;
+            }
+
+            .sidebar.active {
+                width: var(--sidebar-width);
+                padding: 1.5rem;
+                opacity: 1;
+            }
+
+            .sidebar-header h2, 
+            .nav-link span {
+                display: block;
+            }
+
+            .nav-link {
+                justify-content: flex-start;
+                padding: 0.8rem 1rem;
+            }
+
+            .nav-link i {
+                margin-right: 15px;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            /* Add mobile menu toggle button */
+            .menu-toggle {
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                width: 40px;
+                height: 40px;
+                background: var(--primary);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+                cursor: pointer;
+                z-index: 1001;
+                border: none;
+                color: white;
+                font-size: 1.3rem;
+            }
+        }
+
+        /* New styles for inline editing */
+        .editable-row input,
+        .editable-row select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--primary-light);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        body.dark-mode .editable-row input,
+        body.dark-mode .editable-row select {
+            background: rgba(30, 30, 45, 0.9);
+            color: var(--dark-text);
+        }
+
+        .editable-row {
+            background-color: rgba(77, 97, 252, 0.05) !important;
+        }
+
+        body.dark-mode .editable-row {
+            background-color: rgba(77, 97, 252, 0.15) !important;
+        }
+
+        .add-row {
+            background-color: rgba(40, 199, 111, 0.05) !important;
+            border-bottom: 2px dashed var(--success) !important;
+        }
+
+        body.dark-mode .add-row {
+            background-color: rgba(40, 199, 111, 0.15) !important;
+        }
+
+        .add-row-button {
+            display: flex;
+            padding: 1rem;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--success);
+            font-weight: 500;
+            border-bottom: 1px dashed var(--success);
+            transition: var(--transition);
+        }
+
+        .add-row-button:hover {
+            background-color: rgba(40, 199, 111, 0.05);
+        }
+
+        body.dark-mode .add-row-button:hover {
+            background-color: rgba(40, 199, 111, 0.15);
+        }
+
+        .add-row-button i {
+            margin-right: 8px;
+        }
+
+        .inline-edit-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .inline-edit-actions .btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        /* Hide normal action buttons when editing */
+        .editable-row .normal-actions {
+            display: none;
+        }
+
+        /* Show edit actions only when editing */
+        .edit-actions {
+            display: none;
+        }
+
+        .editable-row .edit-actions {
+            display: flex;
+        }
+        
+        /* Adding an animation for new/edited rows */
+        @keyframes highlight-row {
+            0% { background-color: rgba(40, 199, 111, 0.2); }
+            100% { background-color: transparent; }
+        }
+        
+        .highlight-success {
+            animation: highlight-row 2s ease;
+        }
+
+        /* Profile Image Upload Styling */
+        .image-upload-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .current-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: var(--background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed var(--border);
+        }
+
+        body.dark-mode .current-image {
+            background-color: var(--dark-bg);
+            border-color: var(--dark-border);
+        }
+
+        .current-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .current-image i {
+            font-size: 2rem;
+            color: var(--text-light);
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        body.dark-mode input[type="file"] {
+            background: rgba(30, 30, 45, 0.7);
+            border-color: var(--dark-border);
+            color: var(--dark-text);
+        }
+
+        /* Toggle Switch for Visibility */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            height: 0;
+            width: 0;
+            visibility: hidden;
+            position: absolute;
+        }
+
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            width: 50px;
+            height: 25px;
+            background: var(--text-lighter);
+            border-radius: 25px;
+            position: relative;
+            transition: background-color .3s;
+        }
+
+        .toggle-switch input:checked + .toggle-label {
+            background: var(--primary);
+        }
+
+        .toggle-label .toggle-inner {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 20px;
+            transition: 0.3s;
+            background: white;
+            box-shadow: 0 0 2px 0 rgba(10, 10, 10, 0.29);
+            left: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .toggle-switch input:checked + .toggle-label .toggle-inner {
+            left: calc(100% - 3px);
+            transform: translateX(-100%) translateY(-50%);
+        }
+
+        .toggle-text {
+            margin-left: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .toggle-text {
+            color: var(--dark-text);
+        }
+
+        /* User thumbnail in table */
+        .user-thumbnail {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: 500;
+            overflow: hidden;
+        }
+
+        .user-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-name-container {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Visibility Icon */
+        .visibility-icon {
+            margin-left: 5px;
+            font-size: 0.9rem;
+        }
+
+        .visibility-icon.public {
+            color: var(--success);
+        }
+
+        .visibility-icon.private {
+            color: var(--secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Fluid Blob Animation -->
+    <svg class="blob-animation" width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="rgba(77, 97, 252, 0.03)"/>
+                <stop offset="50%" stop-color="rgba(246, 81, 100, 0.03)"/>
+                <stop offset="100%" stop-color="rgba(40, 199, 111, 0.03)"/>
+            </linearGradient>
+            <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+            </filter>
+        </defs>
+        <g filter="url(#goo)">
+            <circle cx="30" cy="30" r="15" fill="url(#gradient)">
+                <animate attributeName="cx" from="30" to="70" dur="20s" repeatCount="indefinite" />
+                <animate attributeName="cy" from="30" to="70" dur="25s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="70" cy="70" r="20" fill="url(#gradient)">
+                <animate attributeName="cx" from="70" to="40" dur="23s" repeatCount="indefinite" />
+                <animate attributeName="cy" from="70" to="30" dur="21s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="50" cy="50" r="25" fill="url(#gradient)">
+                <animate attributeName="cx" from="50" to="80" dur="26s" repeatCount="indefinite" />
+                <animate attributeName="cy" from="50" to="60" dur="19s" repeatCount="indefinite" />
+            </circle>
+        </g>
+    </svg>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">UM</div>
+            <h2>UserManager</h2>
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item active" data-page="dashboard">
+                <a href="#" class="nav-link">
+                    <i class="ri-dashboard-line"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item" data-page="users">
+                <a href="/user" class="nav-link" id="view-users">
+                    <i class="ri-user-line"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+            <li class="nav-item" data-page="analytics">
+                <a href="#" class="nav-link">
+                    <i class="ri-bar-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li class="nav-item" data-page="settings">
+                <a href="#" class="nav-link">
+                    <i class="ri-settings-line"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+            <li class="nav-item" data-page="logout">
+                <a href="#" class="nav-link">
+                    <i class="ri-logout-box-line"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="page-title glass">
+            <h1>User Management</h1>
+            <button class="btn btn-primary" id="header-add-user" data-tooltip="Add a new user">
+                <i class="ri-user-add-line"></i> Add New User
+            </button>
+        </div>
+        <div class="stats-container">
+            <div class="stat-card glass" id="total-users-card">
+                <div class="stat-icon primary">
+                    <i class="ri-user-3-line"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="total-users">0</h3>
+                    <p>Total Users</p>
+                </div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-icon secondary">
+                    <i class="ri-shield-user-line"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="admin-count">0</h3>
+                    <p>Admins</p>
+                </div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-icon success">
+                    <i class="ri-user-settings-line"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="regular-users">0</h3>
+                    <p>Regular Users</p>
+                </div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-icon warning">
+                    <i class="ri-line-chart-line"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>24.5%</h3>
+                    <p>Growth Rate</p>
+                </div>
+            </div>
+        </div>
+        <div class="card glass">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="ri-user-search-line"></i> User Management
+                </h2>
+                <div>
+                    <button class="btn btn-success" id="add-row-btn" data-tooltip="Add a new user">
+                        <i class="ri-user-add-line"></i> Add New User
+                    </button>
+                    <button class="btn btn-info" id="refresh-btn" data-tooltip="Refresh data">
+                        <i class="ri-refresh-line"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="table-container glass">
+                <div class="loader" id="table-loader"></div>
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Age</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- New row for adding users will be inserted here programmatically -->
+                    </tbody>
+                </table>
+                <div class="no-records" id="no-users" style="display: none;">
+                    <p>No users found. Add a new user to get started.</p>
+                </div>
+                <div class="pagination-container" id="pagination-container" style="display: none;">
+                    <div class="pagination-info">
+                        Showing <span id="page-start">1</span> to <span id="page-end">10</span> of <span id="total-count">0</span> users
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" id="prev-page" disabled>
+                            <i class="ri-arrow-left-s-line"></i> Previous
+                        </button>
+                        <div class="page-indicator">
+                            Page <span id="current-page">1</span> of <span id="total-pages">1</span>
+                        </div>
+                        <button class="pagination-btn" id="next-page" disabled>
+                            Next <i class="ri-arrow-right-s-line"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="alert" id="alert-message">
+        <i class="ri-check-line"></i>
+        <span id="alert-text">Operation completed successfully</span>
+    </div>
+    <div class="modal-overlay" id="delete-modal-overlay">
+        <div class="modal glass">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Delete</h3>
+                <button class="modal-close" id="delete-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="text-align: center; margin: 20px 0;">
+                    <i class="ri-error-warning-line" style="font-size: 48px; color: var(--secondary); display: block; margin-bottom: 20px;"></i>
+                    Are you sure you want to delete this user? <br>
+                    <span style="color: var(--secondary); font-weight: 500;">This action cannot be undone.</span>
+                </p>
+                <input type="hidden" id="delete-user-id">
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="delete-modal-cancel">Cancel</button>
+                <button class="btn btn-danger" id="delete-modal-confirm">
+                    <i class="ri-delete-bin-line"></i> Delete User
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Theme toggle button for future implementation -->
+    <div class="theme-toggle" title="Change theme">
+        <i class="ri-sun-line"></i>
+    </div>
+
+    <script>
+        // Update JavaScript for inline editing
+        const userTableBody = document.getElementById('users-table-body');
+        const noUsers = document.getElementById('no-users');
+        const tableLoader = document.getElementById('table-loader');
+        const totalUsersElement = document.getElementById('total-users');
+        const adminCountElement = document.getElementById('admin-count');
+        const regularUsersElement = document.getElementById('regular-users');
+        const alertMessage = document.getElementById('alert-message');
+        const alertText = document.getElementById('alert-text');
+        const paginationContainer = document.getElementById('pagination-container');
+        const deleteModalOverlay = document.getElementById('delete-modal-overlay');
+        const deleteUserIdInput = document.getElementById('delete-user-id');
+        const deleteModalClose = document.getElementById('delete-modal-close');
+        const deleteModalCancel = document.getElementById('delete-modal-cancel');
+        const deleteModalConfirm = document.getElementById('delete-modal-confirm');
+        const addUserBtn = document.getElementById('add-user-btn');
+        const headerAddUserBtn = document.getElementById('header-add-user');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const viewUsersBtn = document.getElementById('view-users');
+        const pageStart = document.getElementById('page-start');
+        const pageEnd = document.getElementById('page-end');
+        const totalCount = document.getElementById('total-count');
+        const currentPageEl = document.getElementById('current-page');
+        const totalPagesEl = document.getElementById('total-pages');
+        const prevPageBtn = document.getElementById('prev-page');
+        const nextPageBtn = document.getElementById('next-page');
+        let allUsers = [];
+        let currentPage = 1;
+        let usersPerPage = 10;
+        const sidebarItems = document.querySelectorAll('.nav-item');
+        let isAddRowVisible = false;
+
+        // Fix to ensure the JavaScript initializes with DOM content
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM loading events
+            fetchUsers();
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.dataset.page;
+                    setActiveSidebarItem(page);
+                    if (page === 'add-user') {
+                        showAddRow();
+                    } else if (page === 'users') {
+                        refreshUsers();
+                    }
+                });
+            });
+            
+            // Add event listeners for theme toggle
+            const themeToggle = document.querySelector('.theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    document.body.classList.toggle('dark-mode');
+                    this.classList.toggle('active');
+                    
+                    // Toggle icon between sun and moon
+                    const icon = this.querySelector('i');
+                    if (icon.classList.contains('ri-sun-line')) {
+                        icon.classList.replace('ri-sun-line', 'ri-moon-line');
+                    } else {
+                        icon.classList.replace('ri-moon-line', 'ri-sun-line');
+                    }
+                });
+            }
+            
+            // Set up all necessary event listeners
+            refreshBtn.addEventListener('click', refreshUsers);
+            viewUsersBtn.addEventListener('click', refreshUsers);
+            deleteModalClose.addEventListener('click', closeDeleteModal);
+            deleteModalCancel.addEventListener('click', closeDeleteModal);
+            deleteModalConfirm.addEventListener('click', deleteUser);
+            
+            // Add row button event listener
+            document.getElementById('add-row-btn').addEventListener('click', showAddRow);
+            
+            deleteModalOverlay.addEventListener('click', (e) => {
+                if (e.target === deleteModalOverlay) {
+                    closeDeleteModal();
+                }
+            });
+            
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.animation = 'pulse 1.5s infinite';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.animation = '';
+                });
+            });
+            
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    removeAddRow(); // Remove add row when changing pages
+                    currentPage--;
+                    updatePagination();
+                    renderPagedUsers();
+                    document.getElementById('users-table').scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+            
+            nextPageBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(allUsers.length / usersPerPage);
+                if (currentPage < totalPages) {
+                    removeAddRow(); // Remove add row when changing pages
+                    currentPage++;
+                    updatePagination();
+                    renderPagedUsers();
+                    document.getElementById('users-table').scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        function setActiveSidebarItem(page) {
+            sidebarItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            const activeItem = document.querySelector(`.nav-item[data-page="${page}"]`);
+            if (activeItem) {
+                activeItem.classList.add('active');
+            }
+        }
+
+        // Function to show the add user row
+        function showAddRow() {
+            if (isAddRowVisible) return;
+            
+            removeAllEditableRows(); // Remove any existing editable rows
+            
+            const newRow = document.createElement('tr');
+            newRow.classList.add('add-row', 'editable-row');
+            newRow.id = 'add-user-row';
+            
+            newRow.innerHTML = `
+                <td>
+                    <div class="image-upload-container" style="margin-bottom: 10px;">
+                        <div class="current-image" id="add-image-preview-container" style="display: none; width: 60px; height: 60px;">
+                            <img id="add-image-preview" src="" alt="Profile Preview">
+                        </div>
+                        <input type="file" id="add-profile-image" name="profileImage" accept="image/*" style="margin-bottom: 5px;">
+                    </div>
+                    <input type="text" name="name" placeholder="Enter name" required>
+                </td>
+                <td><input type="email" name="email" placeholder="Enter email" required></td>
+                <td><input type="number" name="age" placeholder="Age" min="1" max="120"></td>
+                <td>
+                    <select name="role">
+                        <option value="Admin">Admin</option>
+                        <option value="User" selected>User</option>
+                        <option value="Editor">Editor</option>
+                        <option value="Viewer">Viewer</option>
+                    </select>
+                    <div class="toggle-switch" style="margin-top: 10px;">
+                        <input type="checkbox" id="add-visibility" name="isPublic" checked>
+                        <label for="add-visibility" class="toggle-label">
+                            <span class="toggle-inner"></span>
+                            <span class="toggle-switch"></span>
+                        </label>
+                        <span class="toggle-text" id="add-visibility-text">Public</span>
+                    </div>
+                </td>
+                <td class="edit-actions">
+                    <div class="inline-edit-actions">
+                        <button class="btn btn-success save-new-user">
+                            <i class="ri-check-line"></i> Save
+                        </button>
+                        <button class="btn btn-danger cancel-add">
+                            <i class="ri-close-line"></i> Cancel
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            // Prepend to the table
+            if (userTableBody.firstChild) {
+                userTableBody.insertBefore(newRow, userTableBody.firstChild);
+            } else {
+                userTableBody.appendChild(newRow);
+            }
+            
+            // Add event listeners
+            const saveBtn = newRow.querySelector('.save-new-user');
+            const cancelBtn = newRow.querySelector('.cancel-add');
+            const fileInput = newRow.querySelector('#add-profile-image');
+            const visibilityToggle = newRow.querySelector('#add-visibility');
+            const visibilityText = newRow.querySelector('#add-visibility-text');
+            
+            saveBtn.addEventListener('click', saveNewUser);
+            cancelBtn.addEventListener('click', removeAddRow);
+            
+            // File input change handler
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    showAlert('Image size must be less than 5MB', 'danger');
+                    e.target.value = '';
+                    return;
+                }
+                
+                if (!file.type.match('image.*')) {
+                    showAlert('Please select an image file', 'danger');
+                    e.target.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                const previewContainer = newRow.querySelector('#add-image-preview-container');
+                const preview = newRow.querySelector('#add-image-preview');
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            // Visibility toggle handler
+            visibilityToggle.addEventListener('change', function() {
+                visibilityText.textContent = this.checked ? 'Public' : 'Private';
+            });
+            
+            // Focus on first input
+            setTimeout(() => {
+                newRow.querySelector('input[name="name"]').focus();
+            }, 100);
+            
+            isAddRowVisible = true;
+        }
+        
+        function removeAddRow() {
+            const addRow = document.getElementById('add-user-row');
+            if (addRow) {
+                addRow.remove();
+                isAddRowVisible = false;
+            }
+        }
+        
+        function removeAllEditableRows() {
+            document.querySelectorAll('.editable-row').forEach(row => {
+                if (row.id === 'add-user-row') {
+                    removeAddRow();
+                } else {
+                    const userId = row.getAttribute('data-id');
+                    if (userId) {
+                        // Replace with the non-editable version
+                        const user = allUsers.find(u => u._id === userId);
+                        if (user) {
+                            const index = Array.from(userTableBody.children).indexOf(row);
+                            row.replaceWith(createUserRow(user, index));
+                        }
+                    }
+                }
+            });
+        }
+        
+        async function saveNewUser() {
+            const addRow = document.getElementById('add-user-row');
+            const nameInput = addRow.querySelector('input[name="name"]');
+            const emailInput = addRow.querySelector('input[name="email"]');
+            const ageInput = addRow.querySelector('input[name="age"]');
+            const roleSelect = addRow.querySelector('select[name="role"]');
+            const visibilityToggle = addRow.querySelector('#add-visibility');
+            const fileInput = addRow.querySelector('#add-profile-image');
+            
+            const userData = {
+                name: nameInput.value.trim(),
+                email: emailInput.value.trim(),
+                age: ageInput.value.trim(),
+                role: roleSelect.value,
+                isPublic: visibilityToggle.checked
+            };
+            
+            if (!userData.name || !userData.email) {
+                showAlert('Name and email are required fields', 'danger');
+                return;
+            }
+            
+            try {
+                const saveBtn = addRow.querySelector('.save-new-user');
+                const cancelBtn = addRow.querySelector('.cancel-add');
+                
+                saveBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i>';
+                saveBtn.disabled = true;
+                cancelBtn.disabled = true;
+                
+                // Check if there's a file to upload
+                if (fileInput.files.length > 0) {
+                    // Create form data with the image
+                    const formData = new FormData();
+                    formData.append('profileImage', fileInput.files[0]);
+                    
+                    // First create the user
+                    const userResponse = await fetch('/api/users', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(userData)
+                    });
+                    
+                    if (!userResponse.ok) {
+                        const errorData = await userResponse.json().catch(() => ({ error: 'Unknown error occurred' }));
+                        throw new Error(errorData.error || `Error: Server returned ${userResponse.status}`);
+                    }
+                    
+                    // Get the created user data including the ID
+                    const user = await userResponse.json();
+                    
+                    // Now upload the image
+                    const imageResponse = await fetch(`/api/users/${user._id}/profile-image`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!imageResponse.ok) {
+                        showAlert('User created but failed to upload profile image', 'warning');
+                    }
+                } else {
+                    // No image to upload, just create the user
+                    const response = await fetch('/api/users', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(userData)
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ error: 'Unknown error occurred' }));
+                        throw new Error(errorData.error || `Error: Server returned ${response.status}`);
+                    }
+                }
+                
+                showAlert('User added successfully');
+                
+                // Remove add row before refreshing
+                removeAddRow();
+                
+                // Refresh data from the server
+                await fetchUsers();
+                currentPage = 1;
+                updatePagination();
+                renderPagedUsers();
+                
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'danger');
+                
+                const saveBtn = addRow?.querySelector('.save-new-user');
+                const cancelBtn = addRow?.querySelector('.cancel-add');
+                
+                if (saveBtn) {
+                    saveBtn.innerHTML = '<i class="ri-check-line"></i> Save';
+                    saveBtn.disabled = false;
+                }
+                
+                if (cancelBtn) {
+                    cancelBtn.disabled = false;
+                }
+            }
+        }
+        
+        function makeRowEditable(userId) {
+            removeAllEditableRows(); // Remove any existing editable rows
+            
+            const user = allUsers.find(u => u._id === userId);
+            if (!user) return;
+            
+            const existingRow = document.querySelector(`tr[data-id="${userId}"]`);
+            if (!existingRow) return;
+            
+            const editableRow = document.createElement('tr');
+            editableRow.classList.add('editable-row');
+            editableRow.setAttribute('data-id', userId);
+            
+            const isPublic = user.isPublic === true;
+            
+            editableRow.innerHTML = `
+                <td>
+                    <div class="image-upload-container" style="margin-bottom: 10px;">
+                        <div class="current-image" id="edit-image-preview-container-${userId}" style="width: 60px; height: 60px; ${user.profileImage ? '' : 'display: none;'}">
+                            <img id="edit-image-preview-${userId}" src="${user.profileImage || ''}" alt="Profile Preview">
+                        </div>
+                        <input type="file" id="edit-profile-image-${userId}" name="profileImage" accept="image/*" style="margin-bottom: 5px;">
+                        ${user.profileImage ? `
+                        <button type="button" class="btn btn-outline remove-profile-image" data-id="${userId}" style="padding: 5px; font-size: 0.8rem;">
+                            <i class="ri-delete-bin-line"></i> Remove
+                        </button>
+                        ` : ''}
+                    </div>
+                    <input type="text" name="name" value="${user.name || ''}" required>
+                </td>
+                <td><input type="email" name="email" value="${user.email || ''}" required></td>
+                <td><input type="number" name="age" value="${user.age || ''}" min="1" max="120"></td>
+                <td>
+                    <select name="role">
+                        <option value="Admin" ${user.role === 'Admin' ? 'selected' : ''}>Admin</option>
+                        <option value="User" ${user.role === 'User' ? 'selected' : ''}>User</option>
+                        <option value="Editor" ${user.role === 'Editor' ? 'selected' : ''}>Editor</option>
+                        <option value="Viewer" ${user.role === 'Viewer' ? 'selected' : ''}>Viewer</option>
+                    </select>
+                    <div class="toggle-switch" style="margin-top: 10px;">
+                        <input type="checkbox" id="edit-visibility-${userId}" name="isPublic" ${isPublic ? 'checked' : ''}>
+                        <label for="edit-visibility-${userId}" class="toggle-label">
+                            <span class="toggle-inner"></span>
+                            <span class="toggle-switch"></span>
+                        </label>
+                        <span class="toggle-text" id="edit-visibility-text-${userId}">${isPublic ? 'Public' : 'Private'}</span>
+                    </div>
+                </td>
+                <td class="edit-actions">
+                    <div class="inline-edit-actions">
+                        <button class="btn btn-success save-edit" data-id="${userId}">
+                            <i class="ri-check-line"></i> Save
+                        </button>
+                        <button class="btn btn-danger cancel-edit">
+                            <i class="ri-close-line"></i> Cancel
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            existingRow.replaceWith(editableRow);
+            
+            // Add event listeners
+            const saveBtn = editableRow.querySelector('.save-edit');
+            const cancelBtn = editableRow.querySelector('.cancel-edit');
+            const fileInput = editableRow.querySelector(`#edit-profile-image-${userId}`);
+            const visibilityToggle = editableRow.querySelector(`#edit-visibility-${userId}`);
+            const visibilityText = editableRow.querySelector(`#edit-visibility-text-${userId}`);
+            const removeImageBtn = editableRow.querySelector('.remove-profile-image');
+            
+            saveBtn.addEventListener('click', () => saveEditedUser(userId));
+            cancelBtn.addEventListener('click', () => cancelEdit(userId));
+            
+            // File input change handler
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    showAlert('Image size must be less than 5MB', 'danger');
+                    e.target.value = '';
+                    return;
+                }
+                
+                if (!file.type.match('image.*')) {
+                    showAlert('Please select an image file', 'danger');
+                    e.target.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                const previewContainer = editableRow.querySelector(`#edit-image-preview-container-${userId}`);
+                const preview = editableRow.querySelector(`#edit-image-preview-${userId}`);
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            // Visibility toggle handler
+            visibilityToggle.addEventListener('change', function() {
+                visibilityText.textContent = this.checked ? 'Public' : 'Private';
+            });
+            
+            // Remove image button handler
+            if (removeImageBtn) {
+                removeImageBtn.addEventListener('click', function() {
+                    const previewContainer = editableRow.querySelector(`#edit-image-preview-container-${userId}`);
+                    previewContainer.style.display = 'none';
+                    fileInput.value = '';
+                    editableRow.setAttribute('data-remove-image', 'true');
+                });
+            }
+            
+            // Focus on first input
+            setTimeout(() => {
+                editableRow.querySelector('input[name="name"]').focus();
+            }, 100);
+        }
+        
+        async function saveEditedUser(userId) {
+            const editRow = document.querySelector(`tr.editable-row[data-id="${userId}"]`);
+            const nameInput = editRow.querySelector('input[name="name"]');
+            const emailInput = editRow.querySelector('input[name="email"]');
+            const ageInput = editRow.querySelector('input[name="age"]');
+            const roleSelect = editRow.querySelector('select[name="role"]');
+            const visibilityToggle = editRow.querySelector(`#edit-visibility-${userId}`);
+            const fileInput = editRow.querySelector(`#edit-profile-image-${userId}`);
+            const removeImage = editRow.getAttribute('data-remove-image') === 'true';
+            
+            const userData = {
+                name: nameInput.value.trim(),
+                email: emailInput.value.trim(),
+                age: ageInput.value.trim(),
+                role: roleSelect.value,
+                isPublic: visibilityToggle.checked
+            };
+            
+            if (!userData.name || !userData.email) {
+                showAlert('Name and email are required fields', 'danger');
+                return;
+            }
+            
+            try {
+                const saveBtn = editRow.querySelector('.save-edit');
+                const cancelBtn = editRow.querySelector('.cancel-edit');
+                
+                saveBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i>';
+                saveBtn.disabled = true;
+                cancelBtn.disabled = true;
+                
+                // Check if there's a file to upload or image to remove
+                if (fileInput.files.length > 0 || removeImage) {
+                    // Create form data with the image or removal flag
+                    const formData = new FormData();
+                    if (fileInput.files.length > 0) {
+                        formData.append('profileImage', fileInput.files[0]);
+                    } else if (removeImage) {
+                        formData.append('removeImage', 'true');
+                    }
+                    
+                    // Upload the image first
+                    const imageResponse = await fetch(`/api/users/${userId}/profile-image`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!imageResponse.ok) {
+                        throw new Error('Failed to upload profile image');
+                    }
+                    
+                    const imageData = await imageResponse.json();
+                    
+                    // Update userData with the new image URL if provided
+                    if (imageData.profileImage) {
+                        userData.profileImage = imageData.profileImage;
+                    } else if (removeImage) {
+                        userData.profileImage = null;
+                    }
+                }
+                
+                // Now update the user data
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown error occurred' }));
+                    throw new Error(errorData.error || `Error: Server returned ${response.status}`);
+                }
+                
+                // Update the user in our array
+                const userIndex = allUsers.findIndex(u => u._id === userId);
+                if (userIndex !== -1) {
+                    const updatedUser = await response.json();
+                    allUsers[userIndex] = updatedUser;
+                }
+                
+                showAlert('User updated successfully');
+                
+                // Replace the editable row with updated normal row
+                const index = Array.from(userTableBody.children).indexOf(editRow);
+                const updatedRow = createUserRow(allUsers[userIndex], index);
+                editRow.replaceWith(updatedRow);
+                
+                // Add a highlight effect
+                updatedRow.classList.add('highlight-success');
+                setTimeout(() => {
+                    updatedRow.classList.remove('highlight-success');
+                }, 2000);
+                
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'danger');
+                saveBtn.innerHTML = '<i class="ri-check-line"></i> Save';
+                saveBtn.disabled = false;
+                cancelBtn.disabled = false;
+            }
+        }
+        
+        function cancelEdit(userId) {
+            const editRow = document.querySelector(`tr.editable-row[data-id="${userId}"]`);
+            const user = allUsers.find(u => u._id === userId);
+            if (user && editRow) {
+                const index = Array.from(userTableBody.children).indexOf(editRow);
+                editRow.replaceWith(createUserRow(user, index));
+            }
+        }
+        
+        function createUserRow(user, index) {
+            // Default values for undefined fields
+            const userData = {
+                _id: user?._id || "unknown_" + index,
+                name: user?.name || "Unknown",
+                email: user?.email || "No email",
+                age: user?.age || "-", 
+                role: user?.role || "User",
+                profileImage: user?.profileImage || null,
+                isPublic: user?.isPublic === true
+            };
+            
+            const tr = document.createElement('tr');
+            tr.setAttribute('data-id', userData._id);
+            tr.style.opacity = '0';
+            tr.style.transform = 'translateY(10px)';
+            tr.style.transition = 'all 0.3s ease';
+            tr.style.transitionDelay = `${index * 0.05}s`;
+            
+            // Create thumbnail and name with visibility icon
+            const thumbnailHtml = userData.profileImage 
+                ? `<div class="user-thumbnail"><img src="${userData.profileImage}" alt="${userData.name}"></div>`
+                : `<div class="user-thumbnail">${userData.name.charAt(0).toUpperCase()}</div>`;
+                
+            const visibilityIcon = userData.isPublic
+                ? `<i class="ri-earth-line visibility-icon public" title="Public Profile"></i>`
+                : `<i class="ri-lock-line visibility-icon private" title="Private Profile"></i>`;
+            
+            tr.innerHTML = `
+                <td>
+                    <div class="user-name-container">
+                        ${thumbnailHtml}
+                        <a href="/user/${userData._id}" class="user-name-link">${userData.name}</a>
+                        ${visibilityIcon}
+                    </div>
+                </td>
+                <td>${userData.email}</td>
+                <td>${userData.age}</td>
+                <td>
+                    <span class="badge badge-${getBadgeClass(userData.role)}">${userData.role}</span>
+                </td>
+                <td class="actions">
+                    <div class="normal-actions">
+                        <a href="/user/${userData._id}" class="btn btn-primary view-user" data-tooltip="View details">
+                            <i class="ri-eye-line"></i> View
+                        </a>
+                        <button class="btn btn-warning edit-user" data-id="${userData._id}" data-tooltip="Edit user">
+                            <i class="ri-edit-line"></i> Edit
+                        </button>
+                        <button class="btn btn-danger delete-user" data-id="${userData._id}" data-tooltip="Delete user">
+                            <i class="ri-delete-bin-line"></i> Delete
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            setTimeout(() => {
+                tr.style.opacity = '1';
+                tr.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // Add event listeners
+            setTimeout(() => {
+                const editBtn = tr.querySelector('.edit-user');
+                const deleteBtn = tr.querySelector('.delete-user');
+                
+                if (editBtn) {
+                    editBtn.addEventListener('click', () => makeRowEditable(userData._id));
+                }
+                
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', () => openDeleteModal(userData._id));
+                }
+            }, 10);
+            
+            return tr;
+        }
+
+        function startLoading() {
+            tableLoader.style.display = 'block';
+            userTableBody.innerHTML = '';
+            paginationContainer.style.display = 'none';
+            document.querySelectorAll('.stat-info h3').forEach(el => {
+                el.classList.add('loading-shimmer');
+                el.style.color = 'transparent';
+                el.style.height = '30px';
+            });
+        }
+
+        function stopLoading() {
+            tableLoader.style.display = 'none';
+            document.querySelectorAll('.stat-info h3').forEach(el => {
+                el.classList.remove('loading-shimmer');
+                el.style.color = '';
+                el.style.height = '';
+            });
+        }
+
+        // Fixed function for refreshing users
+        async function refreshUsers() {
+            setActiveSidebarItem('users');
+            removeAddRow(); // Remove add row when refreshing
+            await fetchUsers();
+            currentPage = 1;
+            updatePagination();
+            renderPagedUsers();
+        }
+
+        // Add missing functions
+        async function fetchUsers() {
+            startLoading();
+            try {
+                const response = await fetch('/api/users');
+                const users = JSON.parse(await response.text());
+                allUsers = users;
+                if (users.length === 0) {
+                    noUsers.style.display = 'block';
+                    paginationContainer.style.display = 'none';
+                    totalUsersElement.textContent = '0';
+                    adminCountElement.textContent = '0';
+                    regularUsersElement.textContent = '0';
+                } else {
+                    noUsers.style.display = 'none';
+                    currentPage = 1;
+                    updatePagination();
+                    renderPagedUsers();
+                    updateStats(users);
+                    animateCountUp('total-users', users.length);
+                    animateCountUp('admin-count', users.filter(user => user.role === 'Admin').length);
+                    animateCountUp('regular-users', users.filter(user => user.role === 'User').length);
+                }
+            } catch (error) {
+                showAlert('Error fetching users: ' + error.message, 'danger');
+            } finally {
+                stopLoading();
+            }
+        }
+
+        function updateStats(users) {
+            const totalUsers = users.length;
+            const adminCount = users.filter(user => user.role === 'Admin').length;
+            const regularCount = users.filter(user => user.role === 'User').length;
+            totalUsersElement.textContent = totalUsers;
+            adminCountElement.textContent = adminCount;
+            regularUsersElement.textContent = regularCount;
+        }
+
+        function animateCountUp(elementId, targetValue) {
+            const element = document.getElementById(elementId);
+            const duration = 1500;
+            const startValue = 0;
+            const increment = Math.ceil(targetValue / (duration / 16));
+            let currentValue = startValue;
+            
+            function updateCount() {
+                currentValue += increment;
+                if (currentValue >= targetValue) {
+                    element.textContent = targetValue;
+                } else {
+                    element.textContent = currentValue;
+                    requestAnimationFrame(updateCount);
+                }
+            }
+            
+            updateCount();
+        }
+
+        function updatePagination() {
+            const totalUsers = allUsers.length;
+            const totalPages = Math.ceil(totalUsers / usersPerPage);
+            totalCount.textContent = totalUsers;
+            totalPagesEl.textContent = totalPages;
+            currentPageEl.textContent = currentPage;
+            const start = (currentPage - 1) * usersPerPage + 1;
+            const end = Math.min(currentPage * usersPerPage, totalUsers);
+            pageStart.textContent = start;
+            pageEnd.textContent = end;
+            prevPageBtn.disabled = currentPage <= 1;
+            nextPageBtn.disabled = currentPage >= totalPages;
+            paginationContainer.style.display = totalUsers > 0 ? 'flex' : 'none';
+        }
+
+        function renderPagedUsers() {
+            removeAddRow(); // Remove add row before rendering users
+            
+            const start = (currentPage - 1) * usersPerPage;
+            const end = start + usersPerPage;
+            const pagedUsers = allUsers.slice(start, end);
+            
+            userTableBody.innerHTML = ''; // Clear the table
+            
+            if (pagedUsers.length === 0) {
+                // Show no users message if there are no users to display
+                noUsers.style.display = 'block';
+                paginationContainer.style.display = 'none';
+                return;
+            }
+            
+            pagedUsers.forEach((user, index) => {
+                // Make sure we have valid user data
+                if (!user || typeof user !== 'object') {
+                    console.error("Invalid user data:", user);
+                    return;
+                }
+                
+                // Create and add the user row
+                const userRow = createUserRow(user, index);
+                userTableBody.appendChild(userRow);
+            });
+        }
+
+        function getBadgeClass(role) {
+            switch(role) {
+                case 'Admin': return 'admin';
+                case 'Editor': return 'editor';
+                case 'Viewer': return 'viewer';
+                default: return 'user';
+            }
+        }
+
+        function showAlert(message, type = 'success') {
+            alertText.textContent = message;
+            alertMessage.className = `alert alert-${type} show`;
+            setTimeout(() => {
+                alertMessage.className = 'alert';
+            }, 3000);
+        }
+
+        function openDeleteModal(userId) {
+            deleteUserIdInput.value = userId;
+            deleteModalOverlay.classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            deleteModalOverlay.classList.remove('active');
+        }
+
+        async function deleteUser() {
+            const userId = deleteUserIdInput.value;
+            deleteModalConfirm.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Deleting...';
+            deleteModalConfirm.disabled = true;
+            deleteModalCancel.disabled = true;
+            
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Error deleting user');
+                }
+                
+                // Remove the user from our array
+                allUsers = allUsers.filter(user => user._id !== userId);
+                
+                showAlert('User deleted successfully');
+                closeDeleteModal();
+                
+                // Re-render the current page
+                updatePagination();
+                renderPagedUsers();
+                
+                // Update stats
+                updateStats(allUsers);
+                animateCountUp('total-users', allUsers.length);
+                animateCountUp('admin-count', allUsers.filter(user => user.role === 'Admin').length);
+                animateCountUp('regular-users', allUsers.filter(user => user.role === 'User').length);
+                
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'danger');
+            } finally {
+                deleteModalConfirm.innerHTML = '<i class="ri-delete-bin-line"></i> Delete User';
+                deleteModalConfirm.disabled = false;
+                deleteModalCancel.disabled = false;
+            }
+        }
+
+        // Update the navigation links to point to the correct routes
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update sidebar links
+            const dashboardLink = document.querySelector('.nav-item[data-page="dashboard"] a');
+            if (dashboardLink) dashboardLink.href = '/';
+            
+            const usersLink = document.querySelector('.nav-item[data-page="users"] a');
+            if (usersLink) usersLink.href = '/user';
+            
+            // ...existing code...
+        });
+
+        // Fix header-add-user event listener
+        headerAddUserBtn.addEventListener('click', function() {
+            setActiveSidebarItem('add-user');
+            showAddRow();
+        });
+    </script>
+</body>
+</html>
